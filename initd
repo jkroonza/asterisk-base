@@ -1,5 +1,5 @@
 #!/sbin/openrc-run
-# Copyright 1999-2021 Gentoo Authors
+# Copyright 1999-2024 Gentoo Authors
 # Distributed under the terms of the GNU General Public License v2
 
 extra_started_commands="forcestop reload"
@@ -17,7 +17,9 @@ is_running() {
 	EXE="${EXE% (deleted)}" # in case asterisk got upgraded and we're still looking at an old one.
 
 	# check that the pid did not get re-used for another process.
-	[ "${EXE}" = /usr/sbin/asterisk ] || [ "${EXE}" = /usr/bin/asterisk ] || return 1
+	if [ "${EXE}" != /usr/sbin/asterisk ] && [ "${EXE}" != /usr/bin/asterisk ]; then
+		return 1
+	fi
 
 	# PID reported in pidfile is active, and is still an asterisk instance.
 	return 0
@@ -68,7 +70,7 @@ setup_svc_variables()
 
 	[ -z "${ast_user}" ] && ast_user=asterisk
 
-	ast_pgroup="$(getent group $(getent passwd "${ast_user}" | awk -F: '{ print $4 }') | sed -re 's/:.*//')"
+	ast_pgroup="$(getent group $(getent passwd "${ast_user}" | awk -F: '{ print $4 }') | sed -e 's/:.*//')"
 
 	return 0
 }
@@ -86,7 +88,7 @@ start() {
 	eindent
 
 	# filter (redundant) arguments
-	OPTS="$(echo "${ASTERISK_OPTS}" | sed -re "s:-[cfF]::g")"
+	OPTS="$(echo "${ASTERISK_OPTS}" | sed -e "s:-[cfF]::g")"
 
 	# default options
 	OPTS="${OPTS}${OPTS:+ }-C ${ast_confdir}/asterisk.conf -f"  # don't fork / detach breaks wrapper script...
@@ -103,12 +105,13 @@ start() {
 	WRAPPER_OPTS="${WRAPPER_OPTS} --restartdelay ${ASTERISK_RESTART_DELAY}"
 
 	if [ -n "${ASTERISK_CORE_SIZE}" ] &&
-	   [ "${ASTERISK_CORE_SIZE}" != "0" ]; then
+		[ "${ASTERISK_CORE_SIZE}" != "0" ]
+	then
 		WRAPPER_OPTS="${WRAPPER_OPTS} --dumpcore ${ASTERISK_CORE_SIZE}"	
 		OPTS="${OPTS} -g"
 
 		if [ -n "${ASTERISK_CORE_DIR}" ] && \
-		   [ ! -d "${ASTERISK_CORE_DIR}" ]
+			[ ! -d "${ASTERISK_CORE_DIR}" ]
 		then
 			checkpath -d -m 0755 -o ${ast_user}:${ast_group} "${ASTERISK_CORE_DIR}"
 		fi
@@ -207,19 +210,19 @@ start() {
 	/usr/sbin/asterisk_wrapper ${WRAPPER_OPTS} -- ${OPTS} &
 	result=$?
 
-	if [ $result -eq 0 ]; then
+	if [ ${result} -eq 0 ]; then
 		# 2 seconds should be enough for asterisk to start
 		sleep 2
 		is_running
 		result=$?
 
-		[ $result -eq 0 ] || wrapperstop
+		[ ${result} -eq 0 ] || wrapperstop
 	fi
 
 	eoutdent
-	eend $result
+	eend ${result}
 
-	if [ $result -eq 0 ] && yesno "${ASTERISK_WAITBOOTED}"; then
+	if [ ${result} -eq 0 ] && yesno "${ASTERISK_WAITBOOTED}"; then
 		if [ ! -r "${ast_rundir}/asterisk.ctl" ]; then
 			# asterisk can crash during startup ...
 			ebegin "Waiting for ctl file to appear"
@@ -228,16 +231,16 @@ start() {
 			done
 			is_running
 			result=$?
-			eend $result
+			eend ${result}
 		fi
-		if [ $result -eq 0 ]; then
+		if [ ${result} -eq 0 ]; then
 			ebegin "Waiting for ${ast_instancename} to fully boot"
 			/usr/sbin/asterisk -C "${ast_confdir}/asterisk.conf" -r -x "core waitfullybooted" >/dev/null 2>&1
 			eend $?
 		fi
 	fi
 
-	return $result
+	return ${result}
 }
 
 wrapperstop() {
