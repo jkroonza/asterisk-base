@@ -5,7 +5,6 @@
 extra_started_commands="forcestop reload"
 
 depend() {
-	need net
 	use nscd dns dahdi mysql postgresql slapd capi
 }
 
