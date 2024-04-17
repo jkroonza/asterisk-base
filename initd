@@ -267,7 +267,7 @@ forcestop() {
 	wrapperstop
 
 	ebegin "Stopping ${ast_instancename} PBX"
-	start-stop-daemon --stop --pidfile /run/asterisk/asterisk.pid
+	start-stop-daemon --stop --pidfile "${ast_rundir}/asterisk.pid"
 	eend $?
 }
 
