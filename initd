@@ -107,9 +107,6 @@ start() {
 	if [ -n "${ASTERISK_CORE_SIZE}" ] &&
 		[ "${ASTERISK_CORE_SIZE}" != "0" ]
 	then
-		WRAPPER_OPTS="${WRAPPER_OPTS} --dumpcore ${ASTERISK_CORE_SIZE}"	
-		OPTS="${OPTS} -g"
-
 		if [ -n "${ASTERISK_CORE_DIR}" ] && \
 			[ ! -d "${ASTERISK_CORE_DIR}" ]
 		then
@@ -117,19 +114,26 @@ start() {
 		fi
 		ASTERISK_CORE_DIR="${ASTERISK_CORE_DIR:-/tmp}"
 
-		cd "${ASTERISK_CORE_DIR}"
-		einfo "Core dump size            : ${ASTERISK_CORE_SIZE}"
-		einfo "Core dump location        : ${ASTERISK_CORE_DIR}"
-
-		if [ -n "${ASTERISK_CORE_COMPRESS}" ]; then
-			einfo "Core compression tool     : ${ASTERISK_CORE_COMPRESS}"
-			WRAPPER_OPTS="${WRAPPER_OPTS} --corecompress ${ASTERISK_CORE_COMPRESS}"
-		fi
-
-		if yesno "${ASTERISK_CORE_USEHOSTNAME}"; then
-			WRAPPER_OPTS="${WRAPPER_OPTS} --corerename core-%H-%D-%T"
+		if ! cd "${ASTERISK_CORE_DIR}"; then
+			cd /
+			ewarn "Core dumps requested, but unable to set up the runtime environment."
 		else
-			WRAPPER_OPTS="${WRAPPER_OPTS} --corerename core-%D-%T"
+			WRAPPER_OPTS="${WRAPPER_OPTS} --dumpcore ${ASTERISK_CORE_SIZE}"
+			OPTS="${OPTS} -g"
+
+			einfo "Core dump size            : ${ASTERISK_CORE_SIZE}"
+			einfo "Core dump location        : ${ASTERISK_CORE_DIR}"
+
+			if [ -n "${ASTERISK_CORE_COMPRESS}" ]; then
+				einfo "Core compression tool     : ${ASTERISK_CORE_COMPRESS}"
+				WRAPPER_OPTS="${WRAPPER_OPTS} --corecompress ${ASTERISK_CORE_COMPRESS}"
+			fi
+
+			if yesno "${ASTERISK_CORE_USEHOSTNAME}"; then
+				WRAPPER_OPTS="${WRAPPER_OPTS} --corerename core-%H-%D-%T"
+			else
+				WRAPPER_OPTS="${WRAPPER_OPTS} --corerename core-%D-%T"
+			fi
 		fi
 	else
 		cd /
