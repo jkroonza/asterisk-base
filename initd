@@ -48,8 +48,8 @@ setup_svc_variables()
 		ast_instancename="${ast_instancename}(${t})"
 	fi
 
-	[ -n "${ASTERISK_RUNDIR}" ] && ast_rundir="${ASTERISK_RUNDIR}"
-	[ -n "${ASTERISK_LOGDIR}" ] && ast_logdir="${ASTERISK_LOGDIR}"
+	[ -n "${ASTERISK_RUNDIR}" ] && ast_rundir="${ASTERISK_RUNDIR}" && ewarn "Setting ASTERISK_RUNDIR in conf.d will go away in future."
+	[ -n "${ASTERISK_LOGDIR}" ] && ast_logdir="${ASTERISK_LOGDIR}" && ewarn "Setting ASTERISK_LOGDIR in conf.d will go away in future."
 	[ -n "${ASTERISK_CONFDIR}" ] && ast_confdir="${ASTERISK_CONFDIR}"
 	[ -n "${ASTERISK_CACHEDIR}" ] && ast_confdir="${ASTERISK_CACHEDIR}"
 	[ -n "${ASTERISK_STOP_TIMEOUT}" ] && ast_stop_timeout="${ASTERISK_STOP_TIMEOUT}"
