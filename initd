@@ -132,6 +132,10 @@ start() {
 			else
 				WRAPPER_OPTS="${WRAPPER_OPTS} --corerename core-%D-%T"
 			fi
+
+			if sysctl kernel.core_pattern | grep -q '%'; then
+				ewarn "kernel.core_pattern sysctl setting contains % signs which prevents asterisk_wrapper from processing core dumps."
+			fi
 		fi
 	else
 		cd /

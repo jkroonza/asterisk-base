@@ -191,14 +191,21 @@ while [ -r "${rundir}/${progname}.pid" ]; do
 
 		# TODO: figure out how to use /proc/sys/kernel/core_pattern here, but if someone is using
 		# that, chances are they're already dealing with what we want here.
-		if [ -r core ]; then
+		if [ -n "${corerename+yes}" ]; then
+			corename="$(sysctl kernel.core_pattern)"
+			if echo "${corename}" | grep -q '%'; then
+				echo "kernel.core_pattern contains % escape codes, unable to process."
+				unset corename
+			fi
+		fi
+		if [ -z "${corename:+yes}" ] && [ -r "${corename}" ]; then
 			if [ -n "${corerename+yes}" ]; then
 				core_target="$(echo "${corerename}" | sed -e "s/%h/$(hostname)/" \
 					-e "s/%D/$(date +%Y%m%d)/" -e "s/%T/$(date +%H%M%S)/")"
-				mv core "${core_target}"
+				mv "${corename}" "${core_target}"
 				core_target=$(readlink -f "${core_target}")
 			else
-				core_target=$(readlink -f core)
+				core_target=$(readlink -f "${corename}")
 			fi
 
 			if [ -n "${corecompress}" ] && [ -x "${corecompress}" ]; then
