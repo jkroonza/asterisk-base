@@ -129,7 +129,7 @@ start() {
 			fi
 
 			if yesno "${ASTERISK_CORE_USEHOSTNAME}"; then
-				WRAPPER_OPTS="${WRAPPER_OPTS} --corerename core-%H-%D-%T"
+				WRAPPER_OPTS="${WRAPPER_OPTS} --corerename core-%h-%D-%T"
 			else
 				WRAPPER_OPTS="${WRAPPER_OPTS} --corerename core-%D-%T"
 			fi
