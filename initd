@@ -109,7 +109,8 @@ start() {
 		then
 			checkpath -d -m 0755 -o ${ast_user}:${ast_group} "${ASTERISK_CORE_DIR}"
 		fi
-		ASTERISK_CORE_DIR="${ASTERISK_CORE_DIR:-/tmp}"
+		[ -z "${ASTERISK_CORE_DIR}" ] && ewarn "You should explicitly set ASTERISK_CORE_DIR in /etc/conf.d/${RC_SVCNAME}, default changed from /tmp to /run/${RC_SVCNAME} - which is probably not what you want."
+		ASTERISK_CORE_DIR="${ASTERISK_CORE_DIR:-/run/${RC_SVCNAME}}"
 
 		if ! cd "${ASTERISK_CORE_DIR}"; then
 			cd /
